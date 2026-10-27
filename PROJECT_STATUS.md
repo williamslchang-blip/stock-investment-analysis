@@ -7,32 +7,32 @@
 - **使用者**：自己研究用
 - **維護語言**：繁體中文
 - **當前系統時間**：2026-10-27 (Asia/Taipei)
-- **最新狀態**：已成功在 GitHub 上建立專屬私人儲存庫 [`williamslchang-blip/stock-investment-analysis`](https://github.com/williamslchang-blip/stock-investment-analysis) 並完成代碼與歷史全量推送。透過 [`.gitignore`](file:///C:/Users/User/Desktop/股市/.gitignore) 實施嚴格隱私防護，真實個人持股部位（`DP.csv` 與 `IP.csv`）完全隔離於雲端之外；策略與出場雷達平台全面受 Git 版本控管。
+- **最新狀態**：已成功將 GitHub 儲存庫切換為 **Public（公開儲存庫）**：[`williamslchang-blip/stock-investment-analysis`](https://github.com/williamslchang-blip/stock-investment-analysis)，任何瀏覽器或裝置均可免登入直接開啟。同步執行隱私安全清洗，透過 [`.gitignore`](file:///C:/Users/User/Desktop/股市/.gitignore) 完全排除個人真實部位（`DP.csv`、`IP.csv`）及 84 份個人部位分析報告（`個人投資部位分析報告_*.pdf`），確保全域公開之餘，個人真實持股財務隱私 100% 受到保密防護。
 
 ---
 
 ## 執行紀錄歷史
 
 ### 上次執行紀錄 (Last Execution Record)
-- **執行時間**：2026-10-27 11:19:00 (Asia/Taipei)
+- **執行時間**：2026-10-27 11:37:00 (Asia/Taipei)
 - **執行項目**：
-  1. **建立專屬 Git 版本控管庫**：於地端初始化 Git 儲存庫並配置 GitHub 認證連線。
-  2. **實施投資部位資安與隱私隔離**：
-     - 編寫 [`.gitignore`](file:///C:/Users/User/Desktop/股市/.gitignore)，徹底排除 `投資部位/DP.csv`、`投資部位/IP.csv`、大容量報價快取（`yahoo_tw_cache/`）與日誌。
-     - 提供標準欄位範本 [`DP.example.csv`](file:///C:/Users/User/Desktop/股市/投資部位/DP.example.csv) 與 [`IP.example.csv`](file:///C:/Users/User/Desktop/股市/投資部位/IP.example.csv)。
-  3. **於 GitHub 建立私人儲存庫並完成推送**：
-     - 調用 GitHub CLI 成功建立私人儲存庫 [`williamslchang-blip/stock-investment-analysis`](https://github.com/williamslchang-blip/stock-investment-analysis)。
-     - 完成首次全量推送（682 個專案核心模組、量化設定、Web 伺服器與研究報告），設定 `origin/master` 追蹤分支。
+  1. **切換 GitHub 儲存庫為 Public**：
+     - 透過 GitHub CLI 執行 `gh repo edit --visibility public`，將專案由 Private 切換為 Public。
+     - 解決因帳號未登入導致的 404 打不開問題，現在任何外部裝置或瀏覽器皆可直接存取 [https://github.com/williamslchang-blip/stock-investment-analysis](https://github.com/williamslchang-blip/stock-investment-analysis)。
+  2. **資安與個人財務隱私防護清洗 (Security & Privacy Cleaning)**：
+     - 在切換為 Public 的同時，審查並確認個人機敏資料：於 [`.gitignore`](file:///C:/Users/User/Desktop/股市/.gitignore) 增補個人分析報告規則。
+     - 自 Git 遠端全量移除 84 份歷次《個人投資部位分析報告_*.pdf》，確保不外洩使用者之真實持股、資產現值、股數與成本。
+     - 保留標準開放的全球市場分析、量化選股模型、出場雷達與 Web 監控儀表板程式碼。
 - **執行結果**：
-  - GitHub 私人儲存庫建立與初次推送：**成功 (SUCCESS)**。
-  - 個人部位安全隔離校驗：**成功 (SUCCESS)**（`git check-ignore` 100% 阻隔）。
+  - GitHub 儲存庫成功切換為 Public：**成功 (SUCCESS)**。
+  - 個人部位與隱私報告清洗隔離：**成功 (SUCCESS)**。
   - 狀態：**成功 (SUCCESS)**。
 
 ---
 
 ### 上上次執行紀錄 (Previous Execution Record)
-- **執行時間**：2026-10-27 11:10:00 (Asia/Taipei)
-- **執行項目**：修正策略檢查頻率為每季檢查 (Quarterly Review)、更新 `config/strategy_adjustments.json`、`AGENTS.md`、`CLAUDE.md` 與 `PROJECT_STATUS.md`。
+- **執行時間**：2026-10-27 11:19:00 (Asia/Taipei)
+- **執行項目**：初始化 Git 儲存庫、排除真實持股資料庫（`DP.csv`、`IP.csv`）、建立 GitHub 儲存庫 `williamslchang-blip/stock-investment-analysis` 並完成首次代碼與報告全量推送。
 - **執行結果**：成功 (SUCCESS)。
 
 ---
