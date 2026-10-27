@@ -7,32 +7,35 @@
 - **使用者**：自己研究用
 - **維護語言**：繁體中文
 - **當前系統時間**：2026-10-27 (Asia/Taipei)
-- **最新狀態**：已成功將 GitHub 儲存庫切換為 **Public（公開儲存庫）**：[`williamslchang-blip/stock-investment-analysis`](https://github.com/williamslchang-blip/stock-investment-analysis)，任何瀏覽器或裝置均可免登入直接開啟。同步執行隱私安全清洗，透過 [`.gitignore`](file:///C:/Users/User/Desktop/股市/.gitignore) 完全排除個人真實部位（`DP.csv`、`IP.csv`）及 84 份個人部位分析報告（`個人投資部位分析報告_*.pdf`），確保全域公開之餘，個人真實持股財務隱私 100% 受到保密防護。
+- **最新狀態**：已成功在 GitHub 上完成 **GitHub Pages 雲端隨身網站** 部署！雲端專屬網址為 [`https://williamslchang-blip.github.io/stock-investment-analysis/`](https://williamslchang-blip.github.io/stock-investment-analysis/)，手機、平板與任何電腦皆可免開機、免本機環境隨時隨地開啟使用。已建立資料快照輸出程式 [`programs/export_dashboard_snapshot.py`](file:///C:/Users/User/Desktop/股市/programs/export_dashboard_snapshot.py) 並串接至晨間自動化排程，實現雲端面板定時同步更新。
 
 ---
 
 ## 執行紀錄歷史
 
 ### 上次執行紀錄 (Last Execution Record)
-- **執行時間**：2026-10-27 11:37:00 (Asia/Taipei)
+- **執行時間**：2026-10-27 12:08:00 (Asia/Taipei)
 - **執行項目**：
-  1. **切換 GitHub 儲存庫為 Public**：
-     - 透過 GitHub CLI 執行 `gh repo edit --visibility public`，將專案由 Private 切換為 Public。
-     - 解決因帳號未登入導致的 404 打不開問題，現在任何外部裝置或瀏覽器皆可直接存取 [https://github.com/williamslchang-blip/stock-investment-analysis](https://github.com/williamslchang-blip/stock-investment-analysis)。
-  2. **資安與個人財務隱私防護清洗 (Security & Privacy Cleaning)**：
-     - 在切換為 Public 的同時，審查並確認個人機敏資料：於 [`.gitignore`](file:///C:/Users/User/Desktop/股市/.gitignore) 增補個人分析報告規則。
-     - 自 Git 遠端全量移除 84 份歷次《個人投資部位分析報告_*.pdf》，確保不外洩使用者之真實持股、資產現值、股數與成本。
-     - 保留標準開放的全球市場分析、量化選股模型、出場雷達與 Web 監控儀表板程式碼。
+  1. **建置 GitHub Pages 專屬網站架構**：
+     - 建立 `docs/` 靜態發布目錄，包含支援雙模態（地端 API / 雲端快照備援）之 [`docs/index.html`](file:///C:/Users/User/Desktop/股市/docs/index.html)。
+     - 開發 [`programs/export_dashboard_snapshot.py`](file:///C:/Users/User/Desktop/股市/programs/export_dashboard_snapshot.py)，自動將全球總經行情、當日當沖訊號與 35 檔出場雷達匯出為 `docs/data/dashboard_data.json`。
+  2. **啟用 GitHub Pages 託管**：
+     - 調用 GitHub Pages API 將 `williamslchang-blip/stock-investment-analysis` 綁定至 `master` 分支的 `/docs` 目錄。
+     - 驗證成功上線：`https://williamslchang-blip.github.io/stock-investment-analysis/`（HTTP 200 OK，包含完整資料快照）。
+  3. **自動化排程同步掛接**：
+     - 於 [`programs/daily_investment_automation.py`](file:///C:/Users/User/Desktop/股市/programs/daily_investment_automation.py) 中注入快照自動產出鉤子，晨間產報完成時同步更新 `docs/data/dashboard_data.json`。
 - **執行結果**：
-  - GitHub 儲存庫成功切換為 Public：**成功 (SUCCESS)**。
-  - 個人部位與隱私報告清洗隔離：**成功 (SUCCESS)**。
+  - GitHub Pages 啟用與部署：**成功 (SUCCESS)**。
+  - 雲端網站隨身存取驗證：**成功 (SUCCESS)**（HTTP 200）。
+  - 自動化快照排程串接：**成功 (SUCCESS)**。
   - 狀態：**成功 (SUCCESS)**。
 
 ---
 
 ### 上上次執行紀錄 (Previous Execution Record)
-- **執行時間**：2026-10-27 11:19:00 (Asia/Taipei)
-- **執行項目**：初始化 Git 儲存庫、排除真實持股資料庫（`DP.csv`、`IP.csv`）、建立 GitHub 儲存庫 `williamslchang-blip/stock-investment-analysis` 並完成首次代碼與報告全量推送。
+- **執行時間**：2026-10-27 11:37:00 (Asia/Taipei)
+- **執行項目**：切換 GitHub 儲存庫為 Public、資安與個人財務隱私防護清洗（移除 84 份個人損益 PDF）。
+- **執行結果**：成功 (SUCCESS)。
 - **執行結果**：成功 (SUCCESS)。
 
 ---

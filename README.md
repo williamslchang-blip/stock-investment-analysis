@@ -57,3 +57,11 @@
 - **檢核週期**：每季（約 90 天 / 1 季 / 3 個月）定期執行全盤策略檢核與模型覆盤。
 - **治理檔案**：[`config/strategy_adjustments.json`](file:///C:/Users/User/Desktop/股市/config/strategy_adjustments.json)（上次檢視日：2026-10-25，下次應檢核日：2027-01-25）。
 - **覆盤範圍**：學術 10 指標權重分配、風控懲罰扣分項、波段/短衝停利停損門檻、跨期勝率矩陣與同月份效應成效；若需調整將出具獨立《策略模型調整與回測報告》。
+
+### 4. 雲端公開網頁 (GitHub Pages 隨身行動看板)
+- **雲端網址**：[https://williamslchang-blip.github.io/stock-investment-analysis/](https://williamslchang-blip.github.io/stock-investment-analysis/)
+- **功能特色**：
+  - **隨時隨地可用**：部署於 GitHub 雲端，手機、平板、公司電腦無需開啟本機 Python 即可隨點隨看。
+  - **三大即時核心面板**：全球總經指數、當日選股當沖對沖訊號、歷次選股出場雷達全數支援。
+  - **資料同步更新**：晨間排程產報自動呼叫 [`programs/export_dashboard_snapshot.py`](file:///C:/Users/User/Desktop/股市/programs/export_dashboard_snapshot.py) 生成最新快照並同步至雲端。
+  - **100% 財務隱私保密**：個人部位（`DP.csv`、`IP.csv`）及損益 PDF 嚴格排除於雲端之外。
