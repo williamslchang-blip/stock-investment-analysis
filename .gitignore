@@ -44,3 +44,7 @@ desktop.ini
 $RECYCLE.BIN/
 .vscode/
 .idea/
+
+# 個人分析報告 (Personal Portfolio Reports)
+個人投資部位分析報告_*.pdf
+投資部位/*.pdf
