@@ -7,28 +7,32 @@
 - **使用者**：自己研究用
 - **維護語言**：繁體中文
 - **當前系統時間**：2026-10-27 (Asia/Taipei)
-- **最新狀態**：已全面實施歷次選股出場紀律——「只要建議過"立即停損"，則隔日就不再繼續追蹤」，並已於專案治理體系中正式確立「每季（約90天/3個月）定期檢查投資策略」機制（已登記於 [`config/strategy_adjustments.json`](file:///C:/Users/User/Desktop/股市/config/strategy_adjustments.json)、[`AGENTS.md`](file:///C:/Users/User/Desktop/股市/AGENTS.md) 與 [`CLAUDE.md`](file:///C:/Users/User/Desktop/股市/CLAUDE.md)，前次檢視日 2026-10-25，下次覆盤應檢日 2027-01-25）。
+- **最新狀態**：已成功在 GitHub 上建立專屬私人儲存庫 [`williamslchang-blip/stock-investment-analysis`](https://github.com/williamslchang-blip/stock-investment-analysis) 並完成代碼與歷史全量推送。透過 [`.gitignore`](file:///C:/Users/User/Desktop/股市/.gitignore) 實施嚴格隱私防護，真實個人持股部位（`DP.csv` 與 `IP.csv`）完全隔離於雲端之外；策略與出場雷達平台全面受 Git 版本控管。
 
 ---
 
 ## 執行紀錄歷史
 
 ### 上次執行紀錄 (Last Execution Record)
-- **執行時間**：2026-10-27 11:10:00 (Asia/Taipei)
+- **執行時間**：2026-10-27 11:19:00 (Asia/Taipei)
 - **執行項目**：
-  1. **修正策略檢查頻率為「每季檢查 (Quarterly Review)」**：
-     - 依使用者最新指示，將原本半季週期調整為**每季（約 90 天 / 1 季 / 3 個月）**定期檢查一次投資策略。
-     - 於 [`config/strategy_adjustments.json`](file:///C:/Users/User/Desktop/股市/config/strategy_adjustments.json) 更新 `review_cadence`（間隔 90 天、前次 2026-10-25、下次 2027-01-25）。
-     - 於 [`AGENTS.md`](file:///C:/Users/User/Desktop/股市/AGENTS.md) 第 8 節、[`CLAUDE.md`](file:///C:/Users/User/Desktop/股市/CLAUDE.md) 與 [`README.md`](file:///C:/Users/User/Desktop/股市/README.md) 全面同步更新為每季定期覆盤機制。
+  1. **建立專屬 Git 版本控管庫**：於地端初始化 Git 儲存庫並配置 GitHub 認證連線。
+  2. **實施投資部位資安與隱私隔離**：
+     - 編寫 [`.gitignore`](file:///C:/Users/User/Desktop/股市/.gitignore)，徹底排除 `投資部位/DP.csv`、`投資部位/IP.csv`、大容量報價快取（`yahoo_tw_cache/`）與日誌。
+     - 提供標準欄位範本 [`DP.example.csv`](file:///C:/Users/User/Desktop/股市/投資部位/DP.example.csv) 與 [`IP.example.csv`](file:///C:/Users/User/Desktop/股市/投資部位/IP.example.csv)。
+  3. **於 GitHub 建立私人儲存庫並完成推送**：
+     - 調用 GitHub CLI 成功建立私人儲存庫 [`williamslchang-blip/stock-investment-analysis`](https://github.com/williamslchang-blip/stock-investment-analysis)。
+     - 完成首次全量推送（682 個專案核心模組、量化設定、Web 伺服器與研究報告），設定 `origin/master` 追蹤分支。
 - **執行結果**：
-  - 每季策略覆盤週期修改與文件紀錄：**成功 (SUCCESS)**。
+  - GitHub 私人儲存庫建立與初次推送：**成功 (SUCCESS)**。
+  - 個人部位安全隔離校驗：**成功 (SUCCESS)**（`git check-ignore` 100% 阻隔）。
   - 狀態：**成功 (SUCCESS)**。
 
 ---
 
 ### 上上次執行紀錄 (Previous Execution Record)
-- **執行時間**：2026-10-27 10:56:00 (Asia/Taipei)
-- **執行項目**：實施「只要建議過立即停損，則隔日就不再繼續追蹤」策略紀律、建立停損歷程稽核檔案、同步升級 Web 伺服器與出場雷達。
+- **執行時間**：2026-10-27 11:10:00 (Asia/Taipei)
+- **執行項目**：修正策略檢查頻率為每季檢查 (Quarterly Review)、更新 `config/strategy_adjustments.json`、`AGENTS.md`、`CLAUDE.md` 與 `PROJECT_STATUS.md`。
 - **執行結果**：成功 (SUCCESS)。
 
 ---
@@ -51,3 +55,4 @@
 14. **選股模型參數治理：過熱門檻下修至 4.5%、持有天數分級、53週歷史自動防斷層自癒機制**
 15. **地端即時監控網站與當沖對沖決策系統 (`web/server.py` + `web/index.html` + `啟動在地即時監控儀表板.bat`)**
 16. **每季 (約90天/3個月) 投資策略定期覆盤與治理機制：定期檢核學術10指標權重、風控扣分、勝率矩陣與停損門檻，次期應檢核日為 2027-01-25**
+17. **GitHub 遠端版本庫同步與資安防護：已掛載至私人儲存庫 williamslchang-blip/stock-investment-analysis，並實施 .gitignore 隔離真實投資部位**
