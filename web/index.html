@@ -288,21 +288,22 @@
       if (btnText) btnText.innerText = '刷新中...';
 
       const isGitHubPages = window.location.hostname.includes('github.io');
+      const nowTimeStr = new Date().toLocaleTimeString('zh-TW', { hour12: false });
 
       try {
         let data = null;
         if (isGitHubPages) {
-          const res = await fetch('./data/dashboard_data.json?t=' + Date.now());
+          const res = await fetch('./data/dashboard_data.json?t=' + Date.now(), { cache: 'no-store' });
           if (!res.ok) throw new Error('Failed to load GitHub Pages data snapshot');
           data = await res.json();
           renderDashboard(data);
-          document.getElementById('lastUpdated').innerText = `最後更新: ${data.server_time || ''} (GitHub 雲端同步版)`;
+          document.getElementById('lastUpdated').innerText = `快照時間: ${data.server_time || ''} ｜ 已於 ${nowTimeStr} 檢查更新 (GitHub 雲端版)`;
         } else {
           if (manual) {
             try { await fetch('/api/refresh', { method: 'POST' }); } catch(e){}
           }
           try {
-            const res = await fetch('/api/all');
+            const res = await fetch('/api/all', { cache: 'no-store' });
             if (res.ok) {
               data = await res.json();
               renderDashboard(data);
@@ -312,11 +313,11 @@
             }
           } catch (localErr) {
             // 備援切換：地端 API 未回應時，自動載入離線資料快照
-            const res = await fetch('./data/dashboard_data.json?t=' + Date.now());
+            const res = await fetch('./data/dashboard_data.json?t=' + Date.now(), { cache: 'no-store' });
             if (res.ok) {
               data = await res.json();
               renderDashboard(data);
-              document.getElementById('lastUpdated').innerText = `最後更新: ${data.server_time || ''} (離線快照版)`;
+              document.getElementById('lastUpdated').innerText = `快照時間: ${data.server_time || ''} ｜ 離線快照版 (檢查於 ${nowTimeStr})`;
             } else {
               throw localErr;
             }
