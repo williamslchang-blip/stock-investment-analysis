@@ -45,7 +45,10 @@ def get_url(url, timeout=10):
 def fetch_yahoo_quote(symbol):
     """抓取單一標的最新報價資訊（收盤價、前收價、漲跌幅、最高價、最低價、開盤價）"""
     q = urllib.parse.quote(symbol, safe="")
+    # 優先使用 range=1d 取得即時盤中 / 當日精準單日報價，避免 range=5d 取得 5 日前的舊前收價
     urls = [
+        f"https://query1.finance.yahoo.com/v8/finance/chart/{q}?range=1d&interval=1d",
+        f"https://query2.finance.yahoo.com/v8/finance/chart/{q}?range=1d&interval=1d",
         f"https://query1.finance.yahoo.com/v8/finance/chart/{q}?range=5d&interval=1d",
         f"https://query2.finance.yahoo.com/v8/finance/chart/{q}?range=5d&interval=1d",
     ]
@@ -57,29 +60,60 @@ def fetch_yahoo_quote(symbol):
             js = json.loads(raw.decode("utf-8"))
             res = js["chart"]["result"][0]
             meta = res.get("meta", {})
-            quote = res["indicators"]["quote"][0]
+            quote = res.get("indicators", {}).get("quote", [{}])[0]
             closes = [c for c in quote.get("close", []) if c is not None]
             opens = [o for o in quote.get("open", []) if o is not None]
             highs = [h for h in quote.get("high", []) if h is not None]
             lows = [l for l in quote.get("low", []) if l is not None]
             volumes = [v for v in quote.get("volume", []) if v is not None]
-            
+
+            # 1. 現價 / 最新收盤價
             cur_price = meta.get("regularMarketPrice")
             if cur_price is None and closes:
                 cur_price = closes[-1]
-            prev_close = meta.get("chartPreviousClose") or meta.get("previousClose")
-            if (prev_close is None or prev_close == 0) and len(closes) >= 2:
-                prev_close = closes[-2]
-            elif prev_close is None:
+            if cur_price is None:
+                continue
+
+            # 2. 漲跌幅 % 與昨收價
+            # Yahoo Finance meta 中的 regularMarketChangePercent 為官方標準當日漲跌幅%
+            reg_pct = meta.get("regularMarketChangePercent")
+
+            # 昨收價計算:
+            # - previousClose (若 meta 包含)
+            # - 當 range=1d 時，chartPreviousClose 即為昨日收盤價
+            # - 當 range=5d 時，chartPreviousClose 為 5 日前的基準價，昨收價應取 closes[-2]
+            # - 若無上述資料，從 regularMarketChangePercent 反推昨收價
+            prev_close = meta.get("previousClose")
+            if not prev_close:
+                if "range=1d" in url and meta.get("chartPreviousClose"):
+                    prev_close = meta.get("chartPreviousClose")
+                elif len(closes) >= 2:
+                    prev_close = closes[-2]
+                elif meta.get("chartPreviousClose"):
+                    prev_close = meta.get("chartPreviousClose")
+
+            if (not prev_close or prev_close == 0) and reg_pct is not None and (1.0 + reg_pct / 100.0) != 0:
+                prev_close = cur_price / (1.0 + reg_pct / 100.0)
+            elif not prev_close:
                 prev_close = cur_price
-                
-            open_p = opens[-1] if opens else cur_price
-            high_p = max(highs) if highs else cur_price
-            low_p = min(lows) if lows else cur_price
-            vol = volumes[-1] if volumes else 0
-            
-            pct = ((cur_price / prev_close) - 1.0) * 100.0 if prev_close and prev_close > 0 else 0.0
-            
+
+            # 漲跌幅百分比：優先使用 Yahoo 官方 meta 提供的精準當日百分比
+            if reg_pct is not None:
+                pct = float(reg_pct)
+            else:
+                pct = ((cur_price / prev_close) - 1.0) * 100.0 if prev_close and prev_close > 0 else 0.0
+
+            # 3. 漲跌點數
+            change = meta.get("regularMarketChange")
+            if change is None:
+                change = cur_price - prev_close
+
+            # 4. 當日開高低盤與成交量（取當日數值，不跨日取 5 天最高最低）
+            open_p = meta.get("regularMarketOpen") or (opens[-1] if opens else cur_price)
+            high_p = meta.get("regularMarketDayHigh") or (highs[-1] if highs else cur_price)
+            low_p = meta.get("regularMarketDayLow") or (lows[-1] if lows else cur_price)
+            vol = meta.get("regularMarketVolume") or (volumes[-1] if volumes else 0)
+
             return {
                 "symbol": symbol,
                 "price": round(float(cur_price), 2),
@@ -87,7 +121,7 @@ def fetch_yahoo_quote(symbol):
                 "open": round(float(open_p), 2),
                 "high": round(float(high_p), 2),
                 "low": round(float(low_p), 2),
-                "change": round(float(cur_price - prev_close), 2),
+                "change": round(float(change), 2),
                 "pct_change": round(pct, 2),
                 "volume": vol,
                 "status": "success",
@@ -95,6 +129,39 @@ def fetch_yahoo_quote(symbol):
             }
         except Exception:
             continue
+
+    # 針對 Yahoo US 查無代碼之標的（如 ^TWOII 櫃買指數），備援由 Yahoo 台灣即時報價解析
+    if symbol in ("^TWOII", "TWOII"):
+        try:
+            raw = get_url("https://tw.stock.yahoo.com/quote/%5ETWOII", timeout=8)
+            if raw:
+                html = raw.decode("utf-8")
+                m_p = re.search(r'"regularMarketPrice":\s*([0-9.]+)', html)
+                m_pc = re.search(r'"previousClose":\s*([0-9.]+)', html) or re.search(r'"chartPreviousClose":\s*([0-9.]+)', html)
+                m_pct = re.search(r'"regularMarketChangePercent":\s*([0-9.-]+)', html)
+                m_o = re.search(r'"regularMarketOpen":\s*([0-9.]+)', html)
+                m_h = re.search(r'"regularMarketDayHigh":\s*([0-9.]+)', html)
+                m_l = re.search(r'"regularMarketDayLow":\s*([0-9.]+)', html)
+                if m_p:
+                    p = float(m_p.group(1))
+                    pc = float(m_pc.group(1)) if m_pc else p
+                    pct = float(m_pct.group(1)) if m_pct else (((p / pc) - 1.0) * 100.0 if pc > 0 else 0.0)
+                    return {
+                        "symbol": symbol,
+                        "price": round(p, 2),
+                        "prev_close": round(pc, 2),
+                        "open": round(float(m_o.group(1)), 2) if m_o else p,
+                        "high": round(float(m_h.group(1)), 2) if m_h else p,
+                        "low": round(float(m_l.group(1)), 2) if m_l else p,
+                        "change": round(p - pc, 2),
+                        "pct_change": round(pct, 2),
+                        "volume": 0,
+                        "status": "success",
+                        "time": datetime.now().strftime("%H:%M:%S")
+                    }
+        except Exception:
+            pass
+
     return None
 
 class MarketDataEngine:
@@ -215,8 +282,8 @@ class MarketDataEngine:
             industry = str(item.get("industry", ""))
             academic_score = float(item.get("score") or 0.0)
             
-            # 即時報價
-            q = fetch_yahoo_quote(f"{sid}.TW")
+            # 即時報價 (優先上市 .TW，若無則查詢上櫃 .TWO)
+            q = fetch_yahoo_quote(f"{sid}.TW") or fetch_yahoo_quote(f"{sid}.TWO")
             cur_price = q["price"] if q else float(item.get("close") or 0.0)
             open_price = q["open"] if q else cur_price
             prev_close = q["prev_close"] if q else float(item.get("close") or cur_price)
@@ -329,8 +396,8 @@ class MarketDataEngine:
                 if s_date < today_str:
                     continue
             
-            # 抓取即時盤中價格
-            q = fetch_yahoo_quote(f"{sid}.TW")
+            # 抓取即時盤中價格 (優先上市 .TW，若無則查詢上櫃 .TWO)
+            q = fetch_yahoo_quote(f"{sid}.TW") or fetch_yahoo_quote(f"{sid}.TWO")
             cur_price = q["price"] if q else float(r.get("current_close", entry_price) or entry_price)
             pct_change = q["pct_change"] if q else 0.0
             
