@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全球市場即時監控 ✕ 當日選股當沖對沖決策系統</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bgDark: '#0f172a',
+            cardDark: '#1e293b',
+            cardBorder: '#334155',
+            accent: '#0284c7',
+            upRed: '#ef4444',
+            downGreen: '#10b981',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif; }
+    .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 font-black text-xl">
+          📊
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-sky-400 bg-clip-text text-transparent">
+            全球市場即時監控 ✕ 當日選股當沖對沖決策系統
+          </h1>
+          <p class="text-xs text-slate-400 flex items-center gap-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
+            地端即時引擎連線中 ｜ 本機資料庫 100% 離線防斷層運作
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center gap-3 text-sm">
+        <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60 text-xs">
+          <span class="text-slate-400">自動更新:</span>
+          <select id="refreshInterval" class="bg-transparent text-sky-400 font-medium focus:outline-none cursor-pointer" onchange="setupAutoRefresh()">
+            <option value="0" class="bg-slate-800">手動</option>
+            <option value="30" class="bg-slate-800" selected>30秒</option>
+            <option value="60" class="bg-slate-800">1分鐘</option>
+            <option value="300" class="bg-slate-800">5分鐘</option>
+          </select>
+        </div>
+
+        <button onclick="fetchData(true)" id="refreshBtn" class="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 active:scale-95 text-white px-3.5 py-1.5 rounded-lg font-medium shadow-sm transition">
+          <svg id="refreshIcon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span id="btnText">即時更新</span>
+        </button>
+
+        <div class="text-xs text-slate-400 border-l border-slate-800 pl-3">
+          <span id="lastUpdated">更新中...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 border-t border-slate-800/60 pt-2 pb-1 overflow-x-auto">
+      <button onclick="switchTab('macro')" id="tab-macro" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition border border-transparent flex items-center gap-2 text-sky-400 bg-slate-800 border-slate-700">
+        🌐 全球市場與總經脈絡
+      </button>
+      <button onclick="switchTab('daytrade')" id="tab-daytrade" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition border border-transparent flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+        ⚡ 當日選股 ✕ 當沖對沖決策
+        <span id="daytradeBadge" class="bg-sky-500/20 text-sky-300 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+      </button>
+      <button onclick="switchTab('radar')" id="tab-radar" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition border border-transparent flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+        🎯 歷次選股 ✕ 當下出場雷達
+        <span id="radarDangerBadge" class="bg-rose-500 text-white text-xs px-1.5 py-0.2 rounded-full font-bold hidden">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- Top Market Banner Alert -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div id="sentimentMoodBadge" class="px-4 py-2 rounded-xl text-sm font-bold bg-sky-950/80 border border-sky-500/30 text-sky-300 flex items-center gap-2">
+          <span>情緒評分:</span>
+          <span id="sentimentScore" class="text-xl font-extrabold text-sky-400">--</span>
+          <span class="text-xs text-slate-400">/ 100</span>
+        </div>
+        <div>
+          <h2 id="sentimentText" class="text-base font-bold text-white">載入市場數據中...</h2>
+          <p class="text-xs text-slate-400 mt-0.5">
+            建議持股水位：<span id="suggestedPosition" class="text-amber-300 font-semibold">評估中...</span>
+          </p>
+        </div>
+      </div>
+      <div class="text-xs bg-slate-950/60 px-3.5 py-2 rounded-xl border border-slate-800 text-slate-300 flex items-center gap-4">
+        <div>
+          <span class="text-slate-500 block">台股大盤狀態:</span>
+          <span id="twiiStatus" class="font-bold text-emerald-400">加載中...</span>
+        </div>
+        <div class="border-l border-slate-800 pl-4">
+          <span class="text-slate-500 block">恐慌指數 VIX:</span>
+          <span id="vixVal" class="font-bold text-amber-400">--</span>
+        </div>
+        <div class="border-l border-slate-800 pl-4">
+          <span class="text-slate-500 block">美國10年公債:</span>
+          <span id="tnxVal" class="font-bold text-sky-400">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: 全球市場與總經脈絡 (Global Macro) -->
+    <section id="panel-macro" class="space-y-6">
+      <div>
+        <h3 class="text-base font-bold text-slate-200 mb-3 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span> 全球主要指數與關鍵指標即時走勢
+        </h3>
+        <div id="globalQuotesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <!-- Quote cards will be injected by JS -->
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl animate-pulse h-28"></div>
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl animate-pulse h-28"></div>
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl animate-pulse h-28"></div>
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl animate-pulse h-28"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: 當日選股與當沖對沖決策 (Day Trading) -->
+    <section id="panel-daytrade" class="space-y-6 hidden">
+      <!-- Strategy Explanation Banner -->
+      <div class="bg-sky-950/20 border border-sky-800/40 rounded-xl p-4 flex items-start gap-3">
+        <span class="text-2xl">⚡</span>
+        <div class="text-xs text-sky-200 space-y-1">
+          <p class="font-bold text-sm text-sky-300">當日選股當沖 ✕ 盤中對沖策略執行 SOP</p>
+          <p>• <b>做多當沖條件</b>：開盤跳空介於 <b>+0.5% ~ +3.0%</b>（避開 >4.5% 隔日沖出貨陷阱）、股價站穩開盤價且盤中出量，預設停利目標 <b>+2.0% ~ +3.0%</b>，停損設為跌破開盤價或 <b>-1.5%</b>。</p>
+          <p>• <b>強制平倉警示</b>：若進行當沖交易，<b>13:00 ~ 13:20 必須無條件沖銷平倉</b>，嚴禁留倉過夜！</p>
+          <p>• <b>現股反向避險對沖</b>：若手中已有該檔持股，但盤中跌破開盤價並爆量下殺，可立即於盤中執行當沖融券賣出鎖住獲利，達到<b>日內對沖避險</b>效果。</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center">
+          <div>
+            <h3 class="text-base font-bold text-white">當日模型選股 ✕ 當沖對沖即時信號池</h3>
+            <p id="candidateDateNote" class="text-xs text-slate-400 mt-0.5">正在分析晨間快照名單...</p>
+          </div>
+          <span id="candidateCountTag" class="text-xs bg-slate-800 text-sky-400 px-3 py-1 rounded-full font-bold">0 檔候選</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
+                <th class="py-3 px-4">排名</th>
+                <th class="py-3 px-4">代號 / 名稱</th>
+                <th class="py-3 px-4">產業分類</th>
+                <th class="py-3 px-4 text-right">即時現價</th>
+                <th class="py-3 px-4 text-right">今日漲跌</th>
+                <th class="py-3 px-4 text-right">開盤位階</th>
+                <th class="py-3 px-4 text-center">當沖/對沖行動信號</th>
+                <th class="py-3 px-4 text-center">當沖目標停利 / 停損</th>
+                <th class="py-3 px-4 text-center">波段建議持有期</th>
+              </tr>
+            </thead>
+            <tbody id="candidatesTableBody" class="divide-y divide-slate-800/60 text-slate-200">
+              <tr>
+                <td colspan="9" class="py-8 text-center text-slate-500 text-xs">載入中...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: 歷次選股與持股當下出場雷達 (Exit Radar) -->
+    <section id="panel-radar" class="space-y-6 hidden">
+      <!-- Radar Stats Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-rose-950/20 border border-rose-800/40 p-4 rounded-xl">
+          <span class="text-xs font-semibold text-rose-300 block">🚨 緊急停損 / 破線出場</span>
+          <span id="statDangerCount" class="text-2xl font-black text-rose-400 mt-1 block">0</span>
+          <span class="text-[11px] text-rose-300/70 mt-0.5 block">觸發 -6% 硬性停損或破MA120</span>
+        </div>
+        <div class="bg-amber-950/20 border border-amber-800/40 p-4 rounded-xl">
+          <span class="text-xs font-semibold text-amber-300 block">⚠️ 破線減碼防守</span>
+          <span id="statWarningCount" class="text-2xl font-black text-amber-400 mt-1 block">0</span>
+          <span class="text-[11px] text-amber-300/70 mt-0.5 block">跌破 MA20 支撐，減碼 1/2</span>
+        </div>
+        <div class="bg-emerald-950/20 border border-emerald-800/40 p-4 rounded-xl">
+          <span class="text-xs font-semibold text-emerald-300 block">🎯 達標分批停利</span>
+          <span id="statTakeProfitCount" class="text-2xl font-black text-emerald-400 mt-1 block">0</span>
+          <span class="text-[11px] text-emerald-300/70 mt-0.5 block">累積獲利達 +10% 停利入袋</span>
+        </div>
+        <div class="bg-sky-950/20 border border-sky-800/40 p-4 rounded-xl">
+          <span class="text-xs font-semibold text-sky-300 block">⏰ 到期結算換股</span>
+          <span id="statExpiryCount" class="text-2xl font-black text-sky-400 mt-1 block">0</span>
+          <span class="text-[11px] text-sky-300/70 mt-0.5 block">滿 15-20 日波段持有期滿</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="px-5 py-4 border-b border-slate-800 flex justify-between items-center">
+          <div>
+            <h3 class="text-base font-bold text-white">近 20 交易日歷次選股 ✕ 盤中當下出場雷達</h3>
+            <p class="text-xs text-slate-400 mt-0.5">即時監控目前 54 檔活躍持股，動態判定是否當下市價出場或續抱</p>
+          </div>
+          <span id="radarTotalTag" class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full font-bold">0 檔追蹤中</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
+                <th class="py-3 px-4">股票代號 / 名稱</th>
+                <th class="py-3 px-4">進場日期 (已持有)</th>
+                <th class="py-3 px-4 text-center">建議持有天數</th>
+                <th class="py-3 px-4 text-right">進場價 ➔ 現價</th>
+                <th class="py-3 px-4 text-right">今日漲跌</th>
+                <th class="py-3 px-4 text-right">累積報酬率</th>
+                <th class="py-3 px-4 text-center">當下出場處置決策</th>
+                <th class="py-3 px-4">觸發理由與出場指引</th>
+              </tr>
+            </thead>
+            <tbody id="radarTableBody" class="divide-y divide-slate-800/60 text-slate-200">
+              <tr>
+                <td colspan="8" class="py-8 text-center text-slate-500 text-xs">載入追蹤資料中...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-900 bg-slate-950 py-4 text-center text-xs text-slate-500">
+    <p>Google Antigravity 股市量化決策平台 ｜ 100% 地端運算與隱私保護 ｜ 僅供投資研究參考，不構成實盤買賣建議</p>
+  </footer>
+
+  <!-- Frontend Logic -->
+  <script>
+    let autoRefreshTimer = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('text-sky-400', 'bg-slate-800', 'border-slate-700');
+        btn.classList.add('text-slate-400');
+      });
+
+      const targetPanel = document.getElementById(`panel-${tabId}`);
+      const targetBtn = document.getElementById(`tab-${tabId}`);
+      if (targetPanel && targetBtn) {
+        targetPanel.classList.remove('hidden');
+        targetBtn.classList.remove('text-slate-400');
+        targetBtn.classList.add('text-sky-400', 'bg-slate-800', 'border-slate-700');
+      }
+    }
+
+    function setupAutoRefresh() {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      const sec = parseInt(document.getElementById('refreshInterval').value, 10);
+      if (sec > 0) {
+        autoRefreshTimer = setInterval(() => fetchData(false), sec * 1000);
+      }
+    }
+
+    async function fetchData(manual = false) {
+      const btn = document.getElementById('refreshBtn');
+      const icon = document.getElementById('refreshIcon');
+      const btnText = document.getElementById('btnText');
+      
+      if (icon) icon.classList.add('animate-spin');
+      if (btnText) btnText.innerText = '刷新中...';
+
+      try {
+        if (manual) {
+          await fetch('/api/refresh', { method: 'POST' });
+        }
+        const res = await fetch('/api/all');
+        const data = await res.json();
+        renderDashboard(data);
+        document.getElementById('lastUpdated').innerText = `最後更新: ${data.server_time || new Date().toLocaleTimeString()}`;
+      } catch (err) {
+        console.error('Fetch error:', err);
+        document.getElementById('lastUpdated').innerText = '連線異常，請檢查本地伺服器';
+      } finally {
+        if (icon) icon.classList.remove('animate-spin');
+        if (btnText) btnText.innerText = '即時更新';
+      }
+    }
+
+    function renderDashboard(data) {
+      if (!data) return;
+
+      // 1. Top Banner
+      const m = data.market || {};
+      document.getElementById('sentimentScore').innerText = m.sentiment_score || '--';
+      document.getElementById('sentimentText').innerText = m.sentiment_text || '正常運算中';
+      document.getElementById('suggestedPosition').innerText = m.suggested_position || '30% ~ 50%';
+
+      // 2. Global Quotes Grid
+      const quotesGrid = document.getElementById('globalQuotesGrid');
+      if (quotesGrid && m.items) {
+        quotesGrid.innerHTML = m.items.map(q => {
+          const isUp = q.pct_change > 0;
+          const isDown = q.pct_change < 0;
+          const colorClass = isUp ? 'text-rose-400' : (isDown ? 'text-emerald-400' : 'text-slate-400');
+          const bgBadge = isUp ? 'bg-rose-950/40 border-rose-800/40' : (isDown ? 'bg-emerald-950/40 border-emerald-800/40' : 'bg-slate-800 border-slate-700');
+          const arrow = isUp ? '▲ +' : (isDown ? '▼ ' : '■ ');
+          
+          if (q.symbol === '^TWII') {
+            document.getElementById('twiiStatus').innerText = `${q.price.toLocaleString()} (${arrow}${q.pct_change}%)`;
+            document.getElementById('twiiStatus').className = `font-bold ${colorClass}`;
+          }
+          if (q.symbol === '^VIX') document.getElementById('vixVal').innerText = q.price.toFixed(2);
+          if (q.symbol === '^TNX') document.getElementById('tnxVal').innerText = `${q.price.toFixed(2)}%`;
+
+          return `
+            <div class="bg-slate-900 border border-slate-800/80 hover:border-slate-700 p-4 rounded-xl transition shadow-sm hover:shadow-md flex flex-col justify-between">
+              <div class="flex items-start justify-between">
+                <div>
+                  <span class="text-xs text-slate-400 block font-medium">${q.category || ''}</span>
+                  <span class="font-bold text-slate-200 text-sm mt-0.5 block">${q.name}</span>
+                </div>
+                <span class="text-[11px] text-slate-500 font-mono">${q.symbol}</span>
+              </div>
+              <div class="mt-3 flex items-baseline justify-between">
+                <span class="text-xl font-extrabold text-white font-mono tracking-tight">${q.price ? q.price.toLocaleString() : '--'}</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded border ${bgBadge} ${colorClass} font-mono">
+                  ${arrow}${q.pct_change.toFixed(2)}%
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 3. Candidates & Day Trading
+      const c = data.candidates || {};
+      const cList = c.candidates || [];
+      document.getElementById('daytradeBadge').innerText = cList.length;
+      document.getElementById('candidateCountTag').innerText = `${cList.length} 檔候選`;
+      document.getElementById('candidateDateNote').innerText = `依據資料日期 ${c.report_date || '最新'} 快照運算 ｜ ${c.market_note || ''}`;
+
+      const candTbody = document.getElementById('candidatesTableBody');
+      if (candTbody) {
+        if (cList.length === 0) {
+          candTbody.innerHTML = `
+            <tr>
+              <td colspan="9" class="py-12 text-center text-slate-400">
+                <div class="max-w-md mx-auto space-y-2">
+                  <span class="text-4xl block">🛡️</span>
+                  <p class="font-bold text-base text-slate-200">大盤處於空頭或弱勢震盪，今日模型執行嚴格空手防禦！</p>
+                  <p class="text-xs text-slate-500">模型未篩選出符合 1 年期同月份效應之多方攻擊標的。建議今日禁止盲目追價，保留現金水位；或針對弱勢持股進行盤中反向對沖避險。</p>
+                </div>
+              </td>
+            </tr>
+          `;
+        } else {
+          candTbody.innerHTML = cList.map(item => {
+            const isUp = item.pct_change > 0;
+            const pctColor = isUp ? 'text-rose-400' : 'text-emerald-400';
+            let badgeHtml = '';
+            if (item.daytrade_color === 'success') {
+              badgeHtml = `<span class="bg-emerald-950 border border-emerald-500/50 text-emerald-300 px-2.5 py-1 rounded-md text-xs font-bold">🟢 ${item.daytrade_action}</span>`;
+            } else if (item.daytrade_color === 'danger') {
+              badgeHtml = `<span class="bg-rose-950 border border-rose-500/50 text-rose-300 px-2.5 py-1 rounded-md text-xs font-bold">🔴 ${item.daytrade_action}</span>`;
+            } else if (item.daytrade_color === 'warning') {
+              badgeHtml = `<span class="bg-amber-950 border border-amber-500/50 text-amber-300 px-2.5 py-1 rounded-md text-xs font-bold">⚠️ ${item.daytrade_action}</span>`;
+            } else {
+              badgeHtml = `<span class="bg-slate-800 border border-slate-700 text-slate-300 px-2.5 py-1 rounded-md text-xs font-bold">⚖️ ${item.daytrade_action}</span>`;
+            }
+
+            return `
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-4 font-mono font-bold text-sky-400">${item.rank}</td>
+                <td class="py-3 px-4">
+                  <span class="font-bold text-white block">${item.stock_name}</span>
+                  <span class="text-xs text-slate-400 font-mono">${item.stock_id}</span>
+                </td>
+                <td class="py-3 px-4 text-slate-300 text-xs">${item.industry}</td>
+                <td class="py-3 px-4 text-right font-mono font-bold">${item.cur_price.toFixed(2)}</td>
+                <td class="py-3 px-4 text-right font-mono font-bold ${pctColor}">${item.pct_change >= 0 ? '+' : ''}${item.pct_change.toFixed(2)}%</td>
+                <td class="py-3 px-4 text-right font-mono text-xs">
+                  <span class="${item.open_gap_pct > 3.5 ? 'text-amber-400 font-bold' : 'text-slate-300'}">${item.open_gap_pct >= 0 ? '+' : ''}${item.open_gap_pct.toFixed(2)}%</span>
+                </td>
+                <td class="py-3 px-4 text-center">${badgeHtml}</td>
+                <td class="py-3 px-4 text-center font-mono text-xs">
+                  <span class="text-emerald-400 font-bold">停利: ${item.target_profit_price.toFixed(2)}</span>
+                  <span class="text-slate-600 mx-1">|</span>
+                  <span class="text-rose-400 font-bold">停損: ${item.stop_loss_price.toFixed(2)}</span>
+                </td>
+                <td class="py-3 px-4 text-center text-xs">
+                  <span class="bg-slate-800 text-sky-300 px-2 py-0.5 rounded text-[11px] font-semibold">${item.holding_period}</span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 4. Exit Radar (54 Tracked Stocks)
+      const r = data.exit_radar || {};
+      const rList = r.items || [];
+      document.getElementById('statDangerCount').innerText = r.danger_count || 0;
+      document.getElementById('statWarningCount').innerText = rList.filter(x => x.badge_type === 'warning').length;
+      document.getElementById('statTakeProfitCount').innerText = r.take_profit_count || 0;
+      document.getElementById('statExpiryCount').innerText = r.expiry_count || 0;
+      document.getElementById('radarTotalTag').innerText = `${rList.length} 檔追蹤中`;
+
+      const dangerBadge = document.getElementById('radarDangerBadge');
+      if (r.danger_count > 0) {
+        dangerBadge.innerText = r.danger_count;
+        dangerBadge.classList.remove('hidden');
+      } else {
+        dangerBadge.classList.add('hidden');
+      }
+
+      const radarTbody = document.getElementById('radarTableBody');
+      if (radarTbody) {
+        radarTbody.innerHTML = rList.map(item => {
+          const cumColor = item.cum_return_pct >= 0 ? 'text-rose-400' : 'text-emerald-400';
+          let actionBadge = '';
+          if (item.badge_type === 'danger') {
+            actionBadge = `<span class="bg-rose-950 border border-rose-500 text-rose-300 px-2.5 py-1 rounded text-xs font-extrabold animate-pulse">${item.status_level}</span>`;
+          } else if (item.badge_type === 'warning') {
+            actionBadge = `<span class="bg-amber-950 border border-amber-500/60 text-amber-300 px-2 py-1 rounded text-xs font-bold">${item.status_level}</span>`;
+          } else if (item.badge_type === 'success') {
+            actionBadge = `<span class="bg-emerald-950 border border-emerald-500 text-emerald-300 px-2.5 py-1 rounded text-xs font-bold">${item.status_level}</span>`;
+          } else if (item.badge_type === 'info') {
+            actionBadge = `<span class="bg-sky-950 border border-sky-500 text-sky-300 px-2 py-1 rounded text-xs font-bold">${item.status_level}</span>`;
+          } else {
+            actionBadge = `<span class="bg-slate-800 text-slate-300 px-2 py-1 rounded text-xs font-medium">🛡️ ${item.status_level}</span>`;
+          }
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-3 px-4">
+                <span class="font-bold text-white block">${item.stock_name}</span>
+                <span class="text-xs text-slate-400 font-mono">${item.stock_id}</span>
+              </td>
+              <td class="py-3 px-4 font-mono text-xs">
+                ${item.entry_date} <span class="text-slate-400 font-medium">(${item.held_days}日)</span>
+              </td>
+              <td class="py-3 px-4 text-center font-mono text-xs text-slate-300">
+                ${item.target_days} 日
+              </td>
+              <td class="py-3 px-4 text-right font-mono text-xs">
+                <span class="text-slate-400">${item.entry_price.toFixed(2)}</span>
+                <span class="text-slate-600 mx-1">➔</span>
+                <span class="text-white font-bold">${item.cur_price.toFixed(2)}</span>
+              </td>
+              <td class="py-3 px-4 text-right font-mono text-xs ${item.today_pct >= 0 ? 'text-rose-400' : 'text-emerald-400'}">
+                ${item.today_pct >= 0 ? '+' : ''}${item.today_pct.toFixed(2)}%
+              </td>
+              <td class="py-3 px-4 text-right font-mono font-bold ${cumColor}">
+                ${item.cum_return_pct >= 0 ? '+' : ''}${item.cum_return_pct.toFixed(2)}%
+              </td>
+              <td class="py-3 px-4 text-center">${actionBadge}</td>
+              <td class="py-3 px-4 text-xs text-slate-300 max-w-xs truncate" title="${item.decision_msg}">
+                ${item.decision_msg}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    // Initial load
+    fetchData(false);
+    setupAutoRefresh();
+  </script>
+</body>
+</html>

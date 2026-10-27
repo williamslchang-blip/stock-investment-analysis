@@ -1,0 +1,41 @@
+{
+  "report_date": "2026-10-27",
+  "recommendation_data_date": "2026-10-22",
+  "strategy": {
+    "weights": {
+      "score_momentum": 0.2,
+      "score_high52": 0.12,
+      "score_industry_rs": 0.1,
+      "score_stock_rs": 0.1,
+      "score_ma_trend": 0.1,
+      "score_price_volume": 0.08,
+      "score_abnormal_volume": 0.07,
+      "score_low_vol": 0.08,
+      "score_inst_intensity": 0.1,
+      "score_inst_alignment": 0.05
+    },
+    "penalties": {
+      "overheat": 0.12,
+      "volume_down": 0.2,
+      "below_ma120": 0.1
+    },
+    "thresholds": {
+      "low_vol_rank_max": 0.55,
+      "overheat_pct": 4.5,
+      "volume_down_pct": -3.0,
+      "volume_down_mult": 1.5
+    },
+    "holding_policy": {
+      "core_wave_days": "15-20",
+      "steady_momentum_days": "10-15",
+      "short_burst_days": "3-5",
+      "rolling_tracking_window_days": 20,
+      "wave_take_profit_pct": 10.0,
+      "wave_stop_loss_pct": -6.0,
+      "short_take_profit_pct": 6.0,
+      "short_stop_loss_pct": -4.0
+    },
+    "last_review_date": "2026-10-25"
+  },
+  "selected": []
+}

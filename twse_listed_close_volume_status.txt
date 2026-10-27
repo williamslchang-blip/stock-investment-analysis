@@ -1,0 +1,6 @@
+status=ok
+data_date=2026-10-22
+history_rows=128334
+history_min_date=2025-10-16
+history_max_date=2026-10-22
+history_file=C:\Users\User\Desktop\股市\twse_listed_close_volume_history_53w.csv

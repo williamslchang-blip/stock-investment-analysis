@@ -1,0 +1,88 @@
+{
+  "weights": {
+    "score_momentum": 0.2,
+    "score_high52": 0.12,
+    "score_industry_rs": 0.1,
+    "score_stock_rs": 0.1,
+    "score_ma_trend": 0.1,
+    "score_price_volume": 0.08,
+    "score_abnormal_volume": 0.07,
+    "score_low_vol": 0.08,
+    "score_inst_intensity": 0.1,
+    "score_inst_alignment": 0.05
+  },
+  "penalties": {
+    "overheat": 0.12,
+    "volume_down": 0.2,
+    "below_ma120": 0.1
+  },
+  "thresholds": {
+    "low_vol_rank_max": 0.55,
+    "overheat_pct": 4.5,
+    "volume_down_pct": -3.0,
+    "volume_down_mult": 1.5
+  },
+  "holding_policy": {
+    "core_wave_days": "15-20",
+    "steady_momentum_days": "10-15",
+    "short_burst_days": "3-5",
+    "rolling_tracking_window_days": 20,
+    "wave_take_profit_pct": 10.0,
+    "wave_stop_loss_pct": -6.0,
+    "short_take_profit_pct": 6.0,
+    "short_stop_loss_pct": -4.0
+  },
+  "review_cadence": {
+    "frequency": "quarterly",
+    "interval_days": 90,
+    "last_review_date": "2026-10-25",
+    "next_review_due": "2027-01-25",
+    "description": "每季 (約90天/3個月) 檢查一次選股與投資策略，回測因子表現並評估模型參數修改需求"
+  },
+  "last_review_date": "2026-10-25",
+  "change_log": [
+    {
+      "date": "2026-06-25",
+      "selected": 10,
+      "down_count": 0,
+      "avg_day_pct": 4.719,
+      "market_median_pct": 0.817,
+      "changes": [
+        "No material downgrade trigger; kept the strategy weights stable."
+      ]
+    },
+    {
+      "date": "2026-06-26",
+      "selected": 10,
+      "down_count": 0,
+      "avg_day_pct": 4.416,
+      "market_median_pct": 0.96,
+      "changes": [
+        "No material downgrade trigger; kept the strategy weights stable."
+      ]
+    },
+    {
+      "date": "2026-06-29",
+      "selected": 10,
+      "down_count": 0,
+      "avg_day_pct": 3.548,
+      "market_median_pct": 1.043,
+      "changes": [
+        "No material downgrade trigger; kept the strategy weights stable."
+      ]
+    },
+    {
+      "date": "2026-10-25",
+      "selected": 283,
+      "down_count": 119,
+      "avg_day_pct": 0.274,
+      "market_median_pct": -0.081,
+      "changes": [
+        "Rebuilt 53-week local history CSV (117 trading days, 128,334 rows) to restore score_high52, score_industry_rs, and score_stock_rs.",
+        "Lowered overheat_pct threshold from 8.0% to 4.5% and raised overheat penalty from 0.08 to 0.12 based on 53-day review & 20-day holding backtest.",
+        "Mapped official TWSE company industry classifications from local twse_listed_company_info.csv and restored market_status regime filter.",
+        "Added explicit holding period classification (15-20d wave / 10-15d steady / 3-5d short burst) and 20-day rolling cohort tracking."
+      ]
+    }
+  ]
+}

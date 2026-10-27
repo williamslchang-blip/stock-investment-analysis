@@ -1,0 +1,17 @@
+status=ok
+data_date=2026-06-12
+rows=1082
+output_file=C:/Users/User/Desktop/股市/twse_listed_daily_20260612.csv
+latest_file=C:/Users/User/Desktop/股市/twse_listed_daily_latest.csv
+download_warnings:
+2026-06-15: Unable to download TWSE CSV for 2026-06-15
+2026-06-12: Unable to download TWSE CSV for 2026-06-12
+2026-06-11: Unable to download TWSE CSV for 2026-06-11
+2026-06-10: Unable to download TWSE CSV for 2026-06-10
+2026-06-09: Unable to download TWSE CSV for 2026-06-09
+2026-06-08: Unable to download TWSE CSV for 2026-06-08
+2026-06-05: Unable to download TWSE CSV for 2026-06-05
+2026-06-04: Unable to download TWSE CSV for 2026-06-04
+2026-06-03: Unable to download TWSE CSV for 2026-06-03
+2026-06-02: Unable to download TWSE CSV for 2026-06-02
+2026-06-01: Unable to download TWSE CSV for 2026-06-01

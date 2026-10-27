@@ -1,0 +1,82 @@
+{
+  "report_date": "2026-07-17",
+  "recommendation_data_date": "2026-07-16",
+  "strategy": {
+    "weights": {
+      "score_momentum": 0.2,
+      "score_high52": 0.12,
+      "score_industry_rs": 0.1,
+      "score_stock_rs": 0.1,
+      "score_ma_trend": 0.1,
+      "score_price_volume": 0.08,
+      "score_abnormal_volume": 0.07,
+      "score_low_vol": 0.08,
+      "score_inst_intensity": 0.1,
+      "score_inst_alignment": 0.05
+    },
+    "penalties": {
+      "overheat": 0.08,
+      "volume_down": 0.2,
+      "below_ma120": 0.1
+    },
+    "thresholds": {
+      "low_vol_rank_max": 0.55,
+      "overheat_pct": 8.0,
+      "volume_down_pct": -3.0,
+      "volume_down_mult": 1.5
+    },
+    "last_review_date": null
+  },
+  "selected": [
+    {
+      "rank": 1,
+      "stock_id": "2834",
+      "stock_name": "臺企銀",
+      "industry": "金融",
+      "score_momentum": 0.5255376344086021,
+      "score_high52": 1.0,
+      "score_industry_rs": 0.9771505376344086,
+      "score_stock_rs": 0.7425925925925926,
+      "score_ma_trend": 1.0,
+      "score_price_volume": 1.0,
+      "score_abnormal_volume": 0.40587048444424534,
+      "score_low_vol": 0.845513413506013,
+      "score_inst_intensity": 0.9955197132616488,
+      "score_inst_alignment": 0.6666666666666666,
+      "score": 0.806019151555497,
+      "close": 18.15,
+      "pct_change": 1.6806722689075633,
+      "overheat": false,
+      "volume_down": false,
+      "low_vol": true,
+      "ma_ratio": true,
+      "relative_strength": true,
+      "total_lots": 29989.746
+    },
+    {
+      "rank": 2,
+      "stock_id": "7610",
+      "stock_name": "聯友金屬-創",
+      "industry": "其他",
+      "score_momentum": 1.0,
+      "score_high52": 1.0,
+      "score_industry_rs": 0.43862007168458783,
+      "score_stock_rs": 1.0,
+      "score_ma_trend": 1.0,
+      "score_price_volume": 1.0,
+      "score_abnormal_volume": 0.4082471084908125,
+      "score_low_vol": 0.008325624421831601,
+      "score_inst_intensity": 0.8862007168458781,
+      "score_inst_alignment": 0.6666666666666666,
+      "score": 0.7950587597344834,
+      "close": 2600.0,
+      "pct_change": 6.995884773662551,
+      "overheat": false,
+      "volume_down": false,
+      "low_vol": false,
+      "ma_ratio": true,
+      "relative_strength": true,
+      "total_lots": 255.264
+    }
+  ]
+}

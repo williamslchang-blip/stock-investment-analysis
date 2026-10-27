@@ -1,0 +1,82 @@
+{
+  "report_date": "2026-07-21",
+  "recommendation_data_date": "2026-07-20",
+  "strategy": {
+    "weights": {
+      "score_momentum": 0.2,
+      "score_high52": 0.12,
+      "score_industry_rs": 0.1,
+      "score_stock_rs": 0.1,
+      "score_ma_trend": 0.1,
+      "score_price_volume": 0.08,
+      "score_abnormal_volume": 0.07,
+      "score_low_vol": 0.08,
+      "score_inst_intensity": 0.1,
+      "score_inst_alignment": 0.05
+    },
+    "penalties": {
+      "overheat": 0.08,
+      "volume_down": 0.2,
+      "below_ma120": 0.1
+    },
+    "thresholds": {
+      "low_vol_rank_max": 0.55,
+      "overheat_pct": 8.0,
+      "volume_down_pct": -3.0,
+      "volume_down_mult": 1.5
+    },
+    "last_review_date": "2026-06-29"
+  },
+  "selected": [
+    {
+      "rank": 1,
+      "stock_id": "2867",
+      "stock_name": "三商壽",
+      "industry": "金融",
+      "score_momentum": 0.6626235399820305,
+      "score_high52": 1.0,
+      "score_industry_rs": 0.9806828391734053,
+      "score_stock_rs": 0.8063021316033364,
+      "score_ma_trend": 1.0,
+      "score_price_volume": 1.0,
+      "score_abnormal_volume": 0.6893479365764349,
+      "score_low_vol": 0.8518518518518519,
+      "score_inst_intensity": 0.8301886792452831,
+      "score_inst_alignment": 0.6666666666666666,
+      "score": 0.8439779100404404,
+      "close": 9.23,
+      "pct_change": 2.7839643652561246,
+      "overheat": false,
+      "volume_down": false,
+      "low_vol": true,
+      "ma_ratio": true,
+      "relative_strength": true,
+      "total_lots": 8514.7
+    },
+    {
+      "rank": 2,
+      "stock_id": "2546",
+      "stock_name": "根基",
+      "industry": "其他",
+      "score_momentum": 0.5938903863432166,
+      "score_high52": 0.9857578840284843,
+      "score_industry_rs": 0.4384546271338724,
+      "score_stock_rs": 0.7562557924003707,
+      "score_ma_trend": 1.0,
+      "score_price_volume": 1.0,
+      "score_abnormal_volume": 0.5280463918040662,
+      "score_low_vol": 0.9101851851851852,
+      "score_inst_intensity": 0.6495956873315364,
+      "score_inst_alignment": 0.6666666666666666,
+      "score": 0.7446110296130721,
+      "close": 96.9,
+      "pct_change": 0.8324661810613943,
+      "overheat": false,
+      "volume_down": false,
+      "low_vol": true,
+      "ma_ratio": true,
+      "relative_strength": true,
+      "total_lots": 39.2
+    }
+  ]
+}

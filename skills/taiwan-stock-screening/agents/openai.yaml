@@ -1,0 +1,4 @@
+interface:
+  display_name: "台灣上市股票自動選股"
+  short_description: "每日台股篩選、回測與繁體中文研究報告的可重現分析流程"
+  default_prompt: "使用 $taiwan-stock-screening 執行每日台灣上市股票篩選並產生研究報告。"

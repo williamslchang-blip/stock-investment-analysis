@@ -1,0 +1,82 @@
+{
+  "report_date": "2026-10-23",
+  "recommendation_data_date": "2026-10-22",
+  "strategy": {
+    "weights": {
+      "score_momentum": 0.2,
+      "score_high52": 0.12,
+      "score_industry_rs": 0.1,
+      "score_stock_rs": 0.1,
+      "score_ma_trend": 0.1,
+      "score_price_volume": 0.08,
+      "score_abnormal_volume": 0.07,
+      "score_low_vol": 0.08,
+      "score_inst_intensity": 0.1,
+      "score_inst_alignment": 0.05
+    },
+    "penalties": {
+      "overheat": 0.08,
+      "volume_down": 0.2,
+      "below_ma120": 0.1
+    },
+    "thresholds": {
+      "low_vol_rank_max": 0.55,
+      "overheat_pct": 8.0,
+      "volume_down_pct": -3.0,
+      "volume_down_mult": 1.5
+    },
+    "last_review_date": "2026-06-29"
+  },
+  "selected": [
+    {
+      "rank": 1,
+      "stock_id": "2905",
+      "stock_name": "三商",
+      "industry": "其他",
+      "score_momentum": 0.7416891284815813,
+      "score_high52": 0.0,
+      "score_industry_rs": 0.0,
+      "score_stock_rs": 0.0,
+      "score_ma_trend": 1.0,
+      "score_price_volume": 1.0,
+      "score_abnormal_volume": 0.3794605148269444,
+      "score_low_vol": 0.37943585077343034,
+      "score_inst_intensity": 0.9946091644204852,
+      "score_inst_alignment": 0.3333333333333333,
+      "score": 0.501382512904792,
+      "close": 17.95,
+      "pct_change": 0.8426966292134831,
+      "overheat": false,
+      "volume_down": false,
+      "low_vol": false,
+      "ma_ratio": true,
+      "relative_strength": false,
+      "total_lots": 1635.561
+    },
+    {
+      "rank": 2,
+      "stock_id": "2597",
+      "stock_name": "潤弘",
+      "industry": "其他",
+      "score_momentum": 0.4674303683737646,
+      "score_high52": 0.0,
+      "score_industry_rs": 0.0,
+      "score_stock_rs": 0.0,
+      "score_ma_trend": 1.0,
+      "score_price_volume": 1.0,
+      "score_abnormal_volume": 0.27482134423378374,
+      "score_low_vol": 0.8853503184713376,
+      "score_inst_intensity": 0.9847259658580413,
+      "score_inst_alignment": 0.3333333333333333,
+      "score": 0.4786908565012956,
+      "close": 170.0,
+      "pct_change": 0.591715976331361,
+      "overheat": false,
+      "volume_down": false,
+      "low_vol": true,
+      "ma_ratio": true,
+      "relative_strength": false,
+      "total_lots": 160.356
+    }
+  ]
+}

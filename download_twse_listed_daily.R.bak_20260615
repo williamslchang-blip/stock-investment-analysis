@@ -1,0 +1,121 @@
+# Download daily trading data for all TWSE-listed companies from 2026-01-01
+# through the execution date.
+
+required_packages <- c("httr2", "jsonlite", "dplyr", "purrr", "readr", "lubridate", "tidyr")
+missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
+
+if (length(missing_packages) > 0) {
+  install.packages(missing_packages)
+}
+
+library(httr2)
+library(jsonlite)
+library(dplyr)
+library(purrr)
+library(readr)
+library(lubridate)
+library(tidyr)
+
+start_date <- as.Date("2026-01-01")
+end_date <- Sys.Date()
+output_file <- "twse_listed_daily_20260101_to_today.csv"
+
+get_listed_companies <- function() {
+  url <- "https://openapi.twse.com.tw/v1/opendata/t187ap03_L"
+
+  resp <- request(url) |>
+    req_user_agent("R TWSE downloader") |>
+    req_perform()
+
+  fromJSON(resp_body_string(resp), flatten = TRUE) |>
+    as_tibble() |>
+    transmute(
+      stock_id = as.character(`公司代號`),
+      stock_name = `公司名稱`,
+      industry = `產業別`
+    )
+}
+
+roc_to_date <- function(x) {
+  parts <- strsplit(x, "/")
+  as.Date(vapply(parts, function(p) {
+    sprintf("%04d-%02d-%02d", as.integer(p[1]) + 1911, as.integer(p[2]), as.integer(p[3]))
+  }, character(1)))
+}
+
+num_twse <- function(x) {
+  parse_number(gsub(",", "", x))
+}
+
+get_stock_month <- function(stock_id, yyyymm_date) {
+  url <- "https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY"
+
+  resp <- request(url) |>
+    req_url_query(
+      response = "json",
+      date = format(yyyymm_date, "%Y%m%d"),
+      stockNo = stock_id
+    ) |>
+    req_user_agent("R TWSE downloader") |>
+    req_perform()
+
+  js <- fromJSON(resp_body_string(resp))
+
+  if (is.null(js$data) || length(js$data) == 0) {
+    return(tibble())
+  }
+
+  df <- as_tibble(js$data)
+  names(df) <- js$fields
+
+  df |>
+    transmute(
+      stock_id = as.character(stock_id),
+      date = roc_to_date(`日期`),
+      volume = num_twse(`成交股數`),
+      turnover = num_twse(`成交金額`),
+      open = num_twse(`開盤價`),
+      high = num_twse(`最高價`),
+      low = num_twse(`最低價`),
+      close = num_twse(`收盤價`),
+      change = num_twse(`漲跌價差`),
+      transactions = num_twse(`成交筆數`)
+    )
+}
+
+message("Getting TWSE-listed company list...")
+companies <- get_listed_companies()
+
+months <- seq(
+  floor_date(start_date, "month"),
+  floor_date(end_date, "month"),
+  by = "1 month"
+)
+
+tasks <- crossing(
+  stock_id = companies$stock_id,
+  month = months
+)
+
+safe_get_stock_month <- safely(get_stock_month, otherwise = tibble())
+
+message("Downloading daily trading data...")
+daily_prices <- pmap_dfr(tasks, function(stock_id, month) {
+  Sys.sleep(0.2)
+
+  result <- safe_get_stock_month(stock_id, month)
+
+  if (!is.null(result$error)) {
+    message("Failed: ", stock_id, " ", format(month, "%Y-%m"))
+    return(tibble())
+  }
+
+  result$result
+}) |>
+  filter(date >= start_date, date <= end_date) |>
+  left_join(companies, by = "stock_id") |>
+  arrange(stock_id, date)
+
+write_csv(daily_prices, output_file)
+
+message("Done. Saved: ", output_file)
