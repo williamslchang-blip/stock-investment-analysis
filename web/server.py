@@ -488,10 +488,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
 def run_server(port=8888):
     for p in [port, port + 1, 8080, 8501]:
         try:
-            server = ThreadingHTTPServer(("127.0.0.1", p), DashboardHandler)
+            server = ThreadingHTTPServer(("0.0.0.0", p), DashboardHandler)
             print(f"🚀 【股市地端即時監控儀表板】已於本機啟動！")
-            print(f"🌐 本地網址：http://127.0.0.1:{p}")
-            print(f"👉 請於瀏覽器中直接開啟上述網址檢視即時決策與當沖對沖看板。")
+            print(f"🌐 本機網址：http://127.0.0.1:{p} 或 http://localhost:{p}")
+            print(f"📱 區網網址 (同Wi-Fi手機可開)：http://192.168.0.82:{p}")
             server.serve_forever()
             break
         except OSError:
