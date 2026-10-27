@@ -287,20 +287,47 @@
       if (icon) icon.classList.add('animate-spin');
       if (btnText) btnText.innerText = '刷新中...';
 
+      const isGitHubPages = window.location.hostname.includes('github.io');
+
       try {
-        if (manual) {
-          await fetch('/api/refresh', { method: 'POST' });
+        let data = null;
+        if (isGitHubPages) {
+          const res = await fetch('./data/dashboard_data.json?t=' + Date.now());
+          if (!res.ok) throw new Error('Failed to load GitHub Pages data snapshot');
+          data = await res.json();
+          renderDashboard(data);
+          document.getElementById('lastUpdated').innerText = `最後更新: ${data.server_time || ''} (GitHub 雲端同步版)`;
+        } else {
+          if (manual) {
+            try { await fetch('/api/refresh', { method: 'POST' }); } catch(e){}
+          }
+          try {
+            const res = await fetch('/api/all');
+            if (res.ok) {
+              data = await res.json();
+              renderDashboard(data);
+              document.getElementById('lastUpdated').innerText = `最後更新: ${data.server_time || ''} (地端即時連線)`;
+            } else {
+              throw new Error('Local API returned ' + res.status);
+            }
+          } catch (localErr) {
+            // 備援切換：地端 API 未回應時，自動載入離線資料快照
+            const res = await fetch('./data/dashboard_data.json?t=' + Date.now());
+            if (res.ok) {
+              data = await res.json();
+              renderDashboard(data);
+              document.getElementById('lastUpdated').innerText = `最後更新: ${data.server_time || ''} (離線快照版)`;
+            } else {
+              throw localErr;
+            }
+          }
         }
-        const res = await fetch('/api/all');
-        const data = await res.json();
-        renderDashboard(data);
-        document.getElementById('lastUpdated').innerText = `最後更新: ${data.server_time || new Date().toLocaleTimeString()}`;
       } catch (err) {
         console.error('Fetch error:', err);
-        document.getElementById('lastUpdated').innerText = '連線異常，請檢查本地伺服器';
+        document.getElementById('lastUpdated').innerText = '連線載入異常，請點擊重新整理';
       } finally {
         if (icon) icon.classList.remove('animate-spin');
-        if (btnText) btnText.innerText = '即時更新';
+        if (btnText) btnText.innerText = isGitHubPages ? '重新整理' : '即時更新';
       }
     }
 
