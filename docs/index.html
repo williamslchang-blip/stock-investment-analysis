@@ -54,10 +54,13 @@
         <div class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60 text-xs">
           <span class="text-slate-400">自動更新:</span>
           <select id="refreshInterval" class="bg-transparent text-sky-400 font-medium focus:outline-none cursor-pointer" onchange="setupAutoRefresh()">
-            <option value="0" class="bg-slate-800">手動</option>
-            <option value="30" class="bg-slate-800" selected>30秒</option>
+            <option value="5" class="bg-slate-800">5秒 (極速)</option>
+            <option value="10" class="bg-slate-800" selected>10秒 (推薦)</option>
+            <option value="15" class="bg-slate-800">15秒</option>
+            <option value="30" class="bg-slate-800">30秒</option>
             <option value="60" class="bg-slate-800">1分鐘</option>
             <option value="300" class="bg-slate-800">5分鐘</option>
+            <option value="0" class="bg-slate-800">關閉</option>
           </select>
         </div>
 
@@ -254,6 +257,7 @@
   <!-- Frontend Logic -->
   <script>
     let autoRefreshTimer = null;
+    let isFetching = false;
 
     function switchTab(tabId) {
       document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
@@ -280,6 +284,8 @@
     }
 
     async function fetchData(manual = false) {
+      if (isFetching) return;
+      isFetching = true;
       const btn = document.getElementById('refreshBtn');
       const icon = document.getElementById('refreshIcon');
       const btnText = document.getElementById('btnText');
@@ -327,6 +333,7 @@
         console.error('Fetch error:', err);
         document.getElementById('lastUpdated').innerText = '連線載入異常，請點擊重新整理';
       } finally {
+        isFetching = false;
         if (icon) icon.classList.remove('animate-spin');
         if (btnText) btnText.innerText = isGitHubPages ? '重新整理' : '即時更新';
       }
