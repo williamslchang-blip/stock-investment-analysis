@@ -133,6 +133,13 @@ def run_morning(log: RunLog) -> None:
         raise RuntimeError("；".join(failures))
     assert_history_unique()
     log.add("全球報告 2 頁、個人 dashboard 2 頁，且績效歷史同日無重複。")
+    try:
+        sys.path.append(str(ROOT / "programs"))
+        from export_dashboard_snapshot import export_snapshot
+        export_snapshot()
+        log.add("已同步更新 GitHub Pages 儀表板資料快照 (docs/data/dashboard_data.json)。")
+    except Exception as e:
+        log.add(f"GitHub Pages 快照更新提示：{e}")
 
 
 def load_morning_snapshot() -> tuple[pd.DataFrame, dict]:
