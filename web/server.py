@@ -552,13 +552,24 @@ class DashboardHandler(BaseHTTPRequestHandler):
         # 保持終端精簡日誌
         return
 
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
 def run_server(port=8888):
+    lan_ip = get_local_ip()
     for p in [port, port + 1, 8080, 8501]:
         try:
             server = ThreadingHTTPServer(("0.0.0.0", p), DashboardHandler)
             print(f"🚀 【股市地端即時監控儀表板】已於本機啟動！")
             print(f"🌐 本機網址：http://127.0.0.1:{p} 或 http://localhost:{p}")
-            print(f"📱 區網網址 (同Wi-Fi手機可開)：http://192.168.0.82:{p}")
+            print(f"📱 區網網址 (同Wi-Fi手機可開)：http://{lan_ip}:{p}")
             server.serve_forever()
             break
         except OSError:
